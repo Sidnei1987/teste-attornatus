@@ -38,11 +38,6 @@ public class PessoaController {
                 .buildAndExpand(pessoaModel.getId()).toUri();
         return ResponseEntity.created(uri).body(service.updateData(pessoaModel, endereco));
     }
-    //gab
-//    @PostMapping
-//    public ResponseEntity<PessoaModel> post (@RequestBody PessoaModel pessoaModel) {
-//        return ResponseEntity.ok().body(service.cadastraPessoa());
-//    }
 
     @PutMapping(value = "/{id}")
     public ResponseEntity<PessoaModel> update(@PathVariable Long id,@RequestBody PessoaModel pessoaModel){
