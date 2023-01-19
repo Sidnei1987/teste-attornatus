@@ -1,48 +1,45 @@
 package com.TesteAttornatus.TesteAttornatus.controller;
 
-import com.TesteAttornatus.TesteAttornatus.entities.EnderecoModel;
-import com.TesteAttornatus.TesteAttornatus.entities.PessoaModel;
+import com.TesteAttornatus.TesteAttornatus.entities.Pessoa;
 import com.TesteAttornatus.TesteAttornatus.services.PessoaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
 
 @RestController
 @RequestMapping(value = "/pessoa")
 public class PessoaController {
+    private PessoaService pessoaService;
     @Autowired
-    private PessoaService service;
-
+    public PessoaController(PessoaService pessoaService){
+        this.pessoaService = pessoaService;
+    }
 
     @GetMapping
-    public ResponseEntity<List<PessoaModel>> findAll(){
-        List<PessoaModel> list = service.findAll();
-        return  ResponseEntity.ok().body(list);
+    public List<Pessoa> List(){
+        return pessoaService.getList();
     }
 
-    @GetMapping(value = "/{id}")
-    public ResponseEntity<PessoaModel> findById(@PathVariable Long id){
-        PessoaModel pessoaModel  = service.findById(id);
-        return ResponseEntity.ok().body(pessoaModel);
-
+    @GetMapping("/{id}")
+    public ResponseEntity<Pessoa>getById(@PathVariable Long id){
+        return ResponseEntity.ok(pessoaService.getPessoa(id));
     }
     @PostMapping
-    public ResponseEntity<PessoaModel> insert(@RequestBody PessoaModel pessoaModel, EnderecoModel endereco){
-        pessoaModel = service.insert(pessoaModel);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-                .buildAndExpand(pessoaModel.getId()).toUri();
-        return ResponseEntity.created(uri).body(service.updateData(pessoaModel, endereco));
+    public ResponseEntity<Pessoa> save (@RequestBody Pessoa pessoa){
+        Pessoa p = pessoaService.savePessoa(pessoa);
+        return ResponseEntity.status(HttpStatus.CREATED).body(p);
     }
-
-    @PutMapping(value = "/{id}")
-    public ResponseEntity<PessoaModel> update(@PathVariable Long id,@RequestBody PessoaModel pessoaModel){
-        pessoaModel = service.update(id,pessoaModel);
-        return ResponseEntity.ok().body(pessoaModel);
+    @PutMapping("/{id}")
+    public ResponseEntity<Pessoa> update(@PathVariable Long id, @RequestBody Pessoa pessoa){
+        return ResponseEntity.ok(pessoaService.updatePessoa(id, pessoa));
+    }
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id){
+        pessoaService.deletePessoa(id);
     }
 
 

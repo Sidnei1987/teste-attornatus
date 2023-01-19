@@ -1,48 +1,51 @@
 package com.TesteAttornatus.TesteAttornatus.services;
 
-import com.TesteAttornatus.TesteAttornatus.entities.EnderecoModel;
-import com.TesteAttornatus.TesteAttornatus.entities.PessoaModel;
+import com.TesteAttornatus.TesteAttornatus.entities.Pessoa;
+import com.TesteAttornatus.TesteAttornatus.exeption.EntidadeNaoEncontradaException;
 import com.TesteAttornatus.TesteAttornatus.repositories.PessoaRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Optional;
+
+
 @Service
 public class PessoaService {
 
+
+    private PessoaRepository pessoaRepository;
     @Autowired
-    private PessoaRepository repository;
-
-    private PessoaModel pessoaModel;
-
-    private EnderecoModel enderecoModel;
-
-    public List<PessoaModel> findAll(){
-        return repository.findAll();
+    public PessoaService(PessoaRepository pessoaRepository){
+        this.pessoaRepository = pessoaRepository;
     }
 
-    public PessoaModel findById(Long id){
-        Optional<PessoaModel> obj = repository.findById(id);
-        return obj.get();
-    }
-    public PessoaModel insert(PessoaModel obj){
-        return repository.save(obj);
-    }
-    public PessoaModel update(Long id, PessoaModel obj){
-        PessoaModel entity = repository.getReferenceById(id);
-        updateData(entity, enderecoModel);
-        return repository.save(entity);
+    public List<Pessoa> getList(){
+        return pessoaRepository.findAll();
     }
 
-    public PessoaModel updateData(PessoaModel entity, EnderecoModel endereco) {
-        entity.setNome(entity.getNome());
-        entity.setDataDeNacimento(entity.getDataDeNacimento());
-        endereco.setLogrador(endereco.getLogrador());
-        endereco.setCEP(endereco.getCEP());
-        endereco.setNumero(endereco.getNumero());
-        endereco.setCidade(endereco.getCidade());
-        return entity;
+    public Pessoa getPessoa(Long id){
+        return findOrFail(id);
+    }
+
+    public Pessoa savePessoa(Pessoa pessoa){
+        pessoa.getEndereco().forEach(c -> c.setPessoa(pessoa));
+        return pessoaRepository.save(pessoa);
+    }
+    public Pessoa updatePessoa(Long id, Pessoa pessoa){
+        Pessoa pessoaSave = findOrFail(id);
+
+        pessoaSave.getEndereco().clear();
+        pessoaSave.getEndereco().addAll(pessoa.getEndereco());
+        BeanUtils.copyProperties(pessoa,pessoaSave,"id","pessoa");
+        return pessoaRepository.save(pessoaSave);
+    }
+    public void deletePessoa(Long id){
+        Pessoa pessoa = findOrFail(id);
+        pessoaRepository.delete(pessoa);
+    }
+    private Pessoa findOrFail(Long id){
+        return pessoaRepository.findById(id)
+                .orElseThrow(() -> new EntidadeNaoEncontradaException("Pessoa não localizada"));
     }
 
 }
